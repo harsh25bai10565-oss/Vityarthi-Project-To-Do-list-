@@ -1,83 +1,135 @@
-# Vityarthi-Project-To-Do-list-
-Modern Todo List App (Tkinter)
-A modern, clean, and interactive Desktop Todo List Application built using Python (Tkinter).
-It allows users to create, update, delete, complete, search, and sort tasks, with persistent storage using JSON.
+Modern Todo List App - CLI Version
+A simple and efficient command-line Todo List application built with Python. Manage your tasks with priority levels, track completion statistics, and persist your data automatically.
+
 Features
-Task Management
-Add new tasks
-Edit existing tasks
-Delete tasks
-Mark tasks as Completed / Pending
-Search & Sort
-Search tasks by text
-Sort by:
-Newest
-Oldest
-A → Z
-Z → A
-Completed First
-Pending First
-Statistics Panel
-Total tasks
-Completed tasks
-Pending tasks
-Completion percentage
-Data Persistence
-All tasks are automatically stored in todo_data.json
-Restores tasks when app reopens
-Modern UI
-Dark theme layout
-Custom styling (ttk + tkinter)
-Automatic date/time tracking
-Tech Stack
-Component	Technology
-Language	Python 3
-GUI Framework	Tkinter
-Storage	JSON file
-OS Support	Windows / Linux / Mac
-Project Structure
-todoapp/
-│── app.py               # Main application
-│── todo_data.json       # Auto-generated task storage file
-│── README.md            # Project documentation
- How To Run
+✅ Add tasks with priority levels (High, Medium, Low)
 
-1. Install Python 3
-Check:
-python --version
-2. Install Tkinter (if missing)
+📋 View tasks with visual status indicators
 
-Windows → already included
-Linux example:
+✏️ Edit existing tasks
 
-sudo apt-get install python3-tk
-3. Run the application
-python app.py
-📸 Screenshot
+🗑️ Delete tasks with confirmation
 
-(optional – if you want later)
-🧾 Data Format Example
+✅ Mark tasks as completed
 
-[
-  {
-    "task": "Complete assignment",
-    "status": "Pending",
-    "date": "2025-01-20 07:10 AM"
-  }
-]
+📊 View statistics and completion rates
 
+💾 Automatic data persistence to JSON file
 
----
+🎯 Priority-based organization
 
-✨ Future Improvements
+🧹 Clear completed tasks in bulk
 
-Add category / priority
-Export to Excel/PDF
-Notifications / reminders
-Themes system
-Cloud sync
+Installation
+Ensure you have Python 3.6 or higher installed
 
----
+Download the todo_cli.py file
 
-Author
-Harsh Gabrani
+No additional dependencies required!
+
+Quick Start
+bash
+python todo_cli.py
+Usage
+Main Menu Options
+text
+1. View All Tasks      - Display all tasks with their current status
+2. Add New Task        - Create a new task with description and priority
+3. Mark Task as Completed - Change task status to completed
+4. Delete Task         - Remove a specific task
+5. Edit Task           - Modify task description
+6. Clear Completed Tasks - Remove all completed tasks at once
+7. View Statistics     - Show completion rates and priority breakdown
+8. Exit                - Safely exit the application
+Task Priority Levels
+🔴 High - Important and urgent tasks
+
+🟡 Medium - Important but not urgent tasks
+
+🟢 Low - Nice-to-have tasks
+
+Task Status Indicators
+⏳ Pending - Task not yet completed
+
+✅ Completed - Task finished
+
+Data Storage
+All tasks are automatically saved to todo_data.json in the same directory. The file contains:
+
+Task list with descriptions, priorities, and status
+
+Next available task ID
+
+Last saved timestamp
+
+Example Data Format
+json
+{
+  "tasks": [
+    {
+      "id": 1,
+      "description": "Finish project report",
+      "completed": false,
+      "priority": "high",
+      "created_at": "2024-01-15",
+      "completed_at": null
+    }
+  ],
+  "next_id": 2,
+  "last_saved": "2024-01-15T10:30:00.000000"
+}
+Example Session
+text
+==================================================
+           MODERN TODO LIST APP
+==================================================
+1. View All Tasks
+2. Add New Task
+3. Mark Task as Completed
+4. Delete Task
+5. Edit Task
+6. Clear Completed Tasks
+7. View Statistics
+8. Exit
+==================================================
+
+Enter your choice (1-8): 2
+
+--- Add New Task ---
+Enter task description: Complete Python project
+
+Select priority:
+1. 🔴 High
+2. 🟡 Medium
+3. 🟢 Low
+
+Enter choice (1-3, default 2): 1
+
+✅ Task added successfully! (ID: 1)
+Keyboard Shortcuts
+Ctrl + C - Safely exit the application at any time
+
+Input numbers 1-8 for menu navigation
+
+Error Handling
+Invalid input validation
+
+Task not found handling
+
+File read/write error recovery
+
+Graceful interruption handling
+
+Compatibility
+Platform: Windows, macOS, Linux
+
+Python: Version 3.6+
+
+Dependencies: None (uses only standard library)
+
+File Structure
+text
+todo_app/
+├── todo_cli.py          # Main application file
+├── todo_data.json       # Auto-generated data file (created on first run)
+└── README.md           # This file
