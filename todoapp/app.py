@@ -1,206 +1,13 @@
-import tkinter as tk
-from tkinter import ttk, messagebox, simpledialog
 import json
 import os
 from datetime import datetime
 
-class ModernTodoApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Modern Todo List App")
-        self.root.geometry("800x600")
-        self.root.configure(bg='#2c3e50')
-        
-        # Initialize data
+class CLITodoApp:
+    def __init__(self):
         self.filename = "todo_data.json"
         self.tasks = []
         self.next_id = 1
         self.load_tasks()
-        
-        # Configure styles
-        self.setup_styles()
-        
-        # Create GUI
-        self.create_gui()
-        
-        # Load initial tasks
-        self.refresh_task_list()
-    
-    def setup_styles(self):
-        """Configure modern styles for the application"""
-        self.style = ttk.Style()
-        self.style.theme_use('clam')
-        
-        # Configure colors
-        self.colors = {
-            'primary': '#3498db',
-            'success': '#2ecc71',
-            'warning': '#f39c12',
-            'danger': '#e74c3c',
-            'dark': '#2c3e50',
-            'light': '#ecf0f1',
-            'secondary': '#34495e'
-        }
-        
-        # Configure styles
-        self.style.configure('Primary.TButton', 
-                           background=self.colors['primary'],
-                           foreground='white',
-                           padding=(20, 10))
-        
-        self.style.configure('Success.TButton',
-                           background=self.colors['success'],
-                           foreground='white')
-        
-        self.style.configure('Danger.TButton',
-                           background=self.colors['danger'],
-                           foreground='white')
-        
-        self.style.configure('Warning.TButton',
-                           background=self.colors['warning'],
-                           foreground='white')
-        
-        self.style.configure('Custom.Treeview',
-                           background=self.colors['light'],
-                           fieldbackground=self.colors['light'])
-        
-        self.style.configure('Title.TLabel',
-                           background=self.colors['dark'],
-                           foreground='white',
-                           font=('Arial', 16, 'bold'))
-        
-        self.style.configure('Stats.TLabel',
-                           background=self.colors['secondary'],
-                           foreground='white',
-                           font=('Arial', 10))
-    
-    def create_gui(self):
-        """Create the main GUI layout"""
-        # Header Frame
-        header_frame = tk.Frame(self.root, bg=self.colors['dark'], height=80)
-        header_frame.pack(fill='x', padx=10, pady=10)
-        header_frame.pack_propagate(False)
-        
-        title_label = tk.Label(header_frame, 
-                              text="🚀 Modern Todo List", 
-                              font=('Arial', 20, 'bold'),
-                              bg=self.colors['dark'],
-                              fg='white')
-        title_label.pack(pady=20)
-        
-        # Input Frame
-        input_frame = tk.Frame(self.root, bg=self.colors['dark'])
-        input_frame.pack(fill='x', padx=10, pady=5)
-        
-        # Task input
-        tk.Label(input_frame, text="New Task:", 
-                bg=self.colors['dark'], fg='white', font=('Arial', 10)).grid(row=0, column=0, sticky='w')
-        
-        self.task_entry = tk.Entry(input_frame, width=40, font=('Arial', 12))
-        self.task_entry.grid(row=1, column=0, padx=(0, 10), pady=5, sticky='ew')
-        self.task_entry.bind('<Return>', lambda e: self.add_task_from_entry())
-        
-        # Priority selection
-        tk.Label(input_frame, text="Priority:", 
-                bg=self.colors['dark'], fg='white', font=('Arial', 10)).grid(row=0, column=1, sticky='w')
-        
-        self.priority_var = tk.StringVar(value="medium")
-        priority_combo = ttk.Combobox(input_frame, 
-                                    textvariable=self.priority_var,
-                                    values=["low", "medium", "high"],
-                                    state="readonly",
-                                    width=10)
-        priority_combo.grid(row=1, column=1, padx=(0, 10), pady=5)
-        
-        # Add task button
-        add_btn = ttk.Button(input_frame, 
-                           text="Add Task", 
-                           command=self.add_task_from_entry,
-                           style='Success.TButton')
-        add_btn.grid(row=1, column=2, padx=5, pady=5)
-        
-        input_frame.columnconfigure(0, weight=1)
-        
-        # Controls Frame
-        controls_frame = tk.Frame(self.root, bg=self.colors['dark'])
-        controls_frame.pack(fill='x', padx=10, pady=5)
-        
-        ttk.Button(controls_frame, 
-                  text="Mark Complete", 
-                  command=self.mark_completed,
-                  style='Primary.TButton').pack(side='left', padx=5)
-        
-        ttk.Button(controls_frame, 
-                  text="Delete Task", 
-                  command=self.delete_task,
-                  style='Danger.TButton').pack(side='left', padx=5)
-        
-        ttk.Button(controls_frame, 
-                  text="Edit Task", 
-                  command=self.edit_task,
-                  style='Warning.TButton').pack(side='left', padx=5)
-        
-        ttk.Button(controls_frame, 
-                  text="Clear Completed", 
-                  command=self.clear_completed,
-                  style='Danger.TButton').pack(side='left', padx=5)
-        
-        # Filter Frame
-        filter_frame = tk.Frame(self.root, bg=self.colors['dark'])
-        filter_frame.pack(fill='x', padx=10, pady=5)
-        
-        self.filter_var = tk.StringVar(value="all")
-        tk.Radiobutton(filter_frame, text="All Tasks", variable=self.filter_var, 
-                      value="all", command=self.refresh_task_list,
-                      bg=self.colors['dark'], fg='white', selectcolor=self.colors['secondary']).pack(side='left', padx=10)
-        tk.Radiobutton(filter_frame, text="Pending", variable=self.filter_var, 
-                      value="pending", command=self.refresh_task_list,
-                      bg=self.colors['dark'], fg='white', selectcolor=self.colors['secondary']).pack(side='left', padx=10)
-        tk.Radiobutton(filter_frame, text="Completed", variable=self.filter_var, 
-                      value="completed", command=self.refresh_task_list,
-                      bg=self.colors['dark'], fg='white', selectcolor=self.colors['secondary']).pack(side='left', padx=10)
-        
-        # Task List Frame
-        list_frame = tk.Frame(self.root, bg=self.colors['dark'])
-        list_frame.pack(fill='both', expand=True, padx=10, pady=10)
-        
-        # Create treeview for tasks
-        columns = ('id', 'status', 'priority', 'task', 'created')
-        self.tree = ttk.Treeview(list_frame, columns=columns, show='headings', height=15)
-        
-        # Define headings
-        self.tree.heading('id', text='ID')
-        self.tree.heading('status', text='Status')
-        self.tree.heading('priority', text='Priority')
-        self.tree.heading('task', text='Task Description')
-        self.tree.heading('created', text='Created')
-        
-        # Define columns
-        self.tree.column('id', width=50, anchor='center')
-        self.tree.column('status', width=80, anchor='center')
-        self.tree.column('priority', width=80, anchor='center')
-        self.tree.column('task', width=400)
-        self.tree.column('created', width=120, anchor='center')
-        
-        # Scrollbar
-        scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, command=self.tree.yview)
-        self.tree.configure(yscroll=scrollbar.set)
-        
-        # Pack treeview and scrollbar
-        self.tree.pack(side='left', fill='both', expand=True)
-        scrollbar.pack(side='right', fill='y')
-        
-        # Statistics Frame
-        stats_frame = tk.Frame(self.root, bg=self.colors['secondary'], height=60)
-        stats_frame.pack(fill='x', padx=10, pady=10)
-        stats_frame.pack_propagate(False)
-        
-        self.stats_label = tk.Label(stats_frame, 
-                                   text="Total: 0 | Completed: 0 | Pending: 0 | Rate: 0%",
-                                   font=('Arial', 12),
-                                   bg=self.colors['secondary'],
-                                   fg='white')
-        self.stats_label.pack(expand=True)
     
     def load_tasks(self):
         """Load tasks from JSON file"""
@@ -211,7 +18,7 @@ class ModernTodoApp:
                     self.tasks = data.get('tasks', [])
                     self.next_id = data.get('next_id', 1)
             except Exception as e:
-                messagebox.showerror("Error", f"Failed to load tasks: {e}")
+                print(f"Error loading tasks: {e}")
                 self.tasks = []
                 self.next_id = 1
     
@@ -226,144 +33,248 @@ class ModernTodoApp:
             with open(self.filename, 'w') as f:
                 json.dump(data, f, indent=2)
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to save tasks: {e}")
+            print(f"Error saving tasks: {e}")
     
-    def add_task_from_entry(self):
-        """Add task from the input entry"""
-        description = self.task_entry.get().strip()
-        if not description:
-            messagebox.showwarning("Warning", "Please enter a task description!")
+    def display_menu(self):
+        """Display the main menu"""
+        print("\n" + "="*50)
+        print("           MODERN TODO LIST APP")
+        print("="*50)
+        print("1. View All Tasks")
+        print("2. Add New Task")
+        print("3. Mark Task as Completed")
+        print("4. Delete Task")
+        print("5. Edit Task")
+        print("6. Clear Completed Tasks")
+        print("7. View Statistics")
+        print("8. Exit")
+        print("="*50)
+    
+    def display_tasks(self, task_list=None, show_completed=True):
+        """Display tasks in a formatted way"""
+        if task_list is None:
+            task_list = self.tasks
+        
+        if not task_list:
+            print("\nNo tasks found!")
             return
         
-        self.add_task(description, self.priority_var.get())
-        self.task_entry.delete(0, tk.END)
+        print("\n" + "-"*80)
+        print(f"{'ID':<4} {'Status':<12} {'Priority':<8} {'Task Description':<40} {'Created':<12}")
+        print("-"*80)
+        
+        for task in task_list:
+            if not show_completed and task['completed']:
+                continue
+                
+            status = "✅" if task['completed'] else "⏳"
+            priority_icon = {"high": "🔴", "medium": "🟡", "low": "🟢"}[task['priority']]
+            
+            # Truncate long task descriptions
+            description = task['description']
+            if len(description) > 38:
+                description = description[:35] + "..."
+            
+            print(f"{task['id']:<4} {status:<12} {priority_icon:<8} {description:<40} {task['created_at']:<12}")
+        
+        print("-"*80")
     
-    def add_task(self, description, priority="medium"):
+    def add_task(self):
         """Add a new task"""
+        print("\n--- Add New Task ---")
+        description = input("Enter task description: ").strip()
+        
+        if not description:
+            print("Task description cannot be empty!")
+            return
+        
+        print("\nSelect priority:")
+        print("1. 🔴 High")
+        print("2. 🟡 Medium")
+        print("3. 🟢 Low")
+        
+        priority_choice = input("Enter choice (1-3, default 2): ").strip()
+        priority_map = {"1": "high", "2": "medium", "3": "low"}
+        priority = priority_map.get(priority_choice, "medium")
+        
         task = {
             'id': self.next_id,
             'description': description,
             'completed': False,
             'priority': priority,
-            'created_at': datetime.now().strftime("%Y-%m-%d %H:%M"),
+            'created_at': datetime.now().strftime("%Y-%m-%d"),
             'completed_at': None
         }
+        
         self.tasks.append(task)
         self.next_id += 1
         self.save_tasks()
-        self.refresh_task_list()
-        messagebox.showinfo("Success", f"Task added successfully! (ID: {task['id']})")
-    
-    def refresh_task_list(self):
-        """Refresh the task list display"""
-        # Clear existing items
-        for item in self.tree.get_children():
-            self.tree.delete(item)
-        
-        # Filter tasks based on selection
-        filter_type = self.filter_var.get()
-        if filter_type == "pending":
-            display_tasks = [task for task in self.tasks if not task['completed']]
-        elif filter_type == "completed":
-            display_tasks = [task for task in self.tasks if task['completed']]
-        else:
-            display_tasks = self.tasks
-        
-        # Add tasks to treeview
-        for task in display_tasks:
-            status = "✅ Completed" if task['completed'] else "⏳ Pending"
-            priority_icon = {"high": "🔴 High", "medium": "🟡 Medium", "low": "🟢 Low"}[task['priority']]
-            
-            self.tree.insert('', 'end', values=(
-                task['id'],
-                status,
-                priority_icon,
-                task['description'],
-                task['created_at']
-            ))
-        
-        # Update statistics
-        self.update_statistics()
-    
-    def get_selected_task(self):
-        """Get the currently selected task"""
-        selection = self.tree.selection()
-        if not selection:
-            messagebox.showwarning("Warning", "Please select a task first!")
-            return None
-        
-        item = selection[0]
-        task_id = int(self.tree.item(item)['values'][0])
-        
-        for task in self.tasks:
-            if task['id'] == task_id:
-                return task
-        return None
+        print(f"\n✅ Task added successfully! (ID: {task['id']})")
     
     def mark_completed(self):
-        """Mark selected task as completed"""
-        task = self.get_selected_task()
+        """Mark a task as completed"""
+        if not self.tasks:
+            print("\nNo tasks available!")
+            return
+        
+        self.display_tasks(show_completed=False)
+        try:
+            task_id = int(input("\nEnter task ID to mark as completed: "))
+        except ValueError:
+            print("Please enter a valid number!")
+            return
+        
+        task = self.find_task_by_id(task_id)
         if task:
             if task['completed']:
-                messagebox.showinfo("Info", "Task is already completed!")
+                print("Task is already completed!")
             else:
                 task['completed'] = True
                 task['completed_at'] = datetime.now().strftime("%Y-%m-%d %H:%M")
                 self.save_tasks()
-                self.refresh_task_list()
-                messagebox.showinfo("Success", "Task marked as completed!")
+                print("✅ Task marked as completed!")
+        else:
+            print("Task not found!")
     
     def delete_task(self):
-        """Delete selected task"""
-        task = self.get_selected_task()
+        """Delete a task"""
+        if not self.tasks:
+            print("\nNo tasks available!")
+            return
+        
+        self.display_tasks()
+        try:
+            task_id = int(input("\nEnter task ID to delete: "))
+        except ValueError:
+            print("Please enter a valid number!")
+            return
+        
+        task = self.find_task_by_id(task_id)
         if task:
-            if messagebox.askyesno("Confirm", f"Delete task: {task['description']}?"):
-                self.tasks = [t for t in self.tasks if t['id'] != task['id']]
+            confirm = input(f"Are you sure you want to delete '{task['description']}'? (y/n): ").lower()
+            if confirm == 'y':
+                self.tasks = [t for t in self.tasks if t['id'] != task_id]
                 self.save_tasks()
-                self.refresh_task_list()
-                messagebox.showinfo("Success", "Task deleted successfully!")
+                print("✅ Task deleted successfully!")
+        else:
+            print("Task not found!")
     
     def edit_task(self):
-        """Edit selected task"""
-        task = self.get_selected_task()
+        """Edit a task"""
+        if not self.tasks:
+            print("\nNo tasks available!")
+            return
+        
+        self.display_tasks()
+        try:
+            task_id = int(input("\nEnter task ID to edit: "))
+        except ValueError:
+            print("Please enter a valid number!")
+            return
+        
+        task = self.find_task_by_id(task_id)
         if task:
-            new_description = simpledialog.askstring("Edit Task", 
-                                                   "Enter new description:",
-                                                   initialvalue=task['description'])
-            if new_description and new_description.strip():
-                task['description'] = new_description.strip()
+            print(f"\nCurrent description: {task['description']}")
+            new_description = input("Enter new description: ").strip()
+            
+            if new_description:
+                task['description'] = new_description
                 self.save_tasks()
-                self.refresh_task_list()
-                messagebox.showinfo("Success", "Task updated successfully!")
+                print("✅ Task updated successfully!")
+            else:
+                print("Task description cannot be empty!")
+        else:
+            print("Task not found!")
     
     def clear_completed(self):
         """Clear all completed tasks"""
-        if not any(task['completed'] for task in self.tasks):
-            messagebox.showinfo("Info", "No completed tasks to clear!")
+        completed_tasks = [task for task in self.tasks if task['completed']]
+        
+        if not completed_tasks:
+            print("\nNo completed tasks to clear!")
             return
         
-        if messagebox.askyesno("Confirm", "Delete all completed tasks?"):
+        print(f"\nFound {len(completed_tasks)} completed tasks:")
+        self.display_tasks(completed_tasks)
+        
+        confirm = input("\nAre you sure you want to delete all completed tasks? (y/n): ").lower()
+        if confirm == 'y':
             self.tasks = [task for task in self.tasks if not task['completed']]
             self.save_tasks()
-            self.refresh_task_list()
-            messagebox.showinfo("Success", "Completed tasks cleared!")
+            print(f"✅ Cleared {len(completed_tasks)} completed tasks!")
     
-    def update_statistics(self):
-        """Update statistics display"""
+    def show_statistics(self):
+        """Show task statistics"""
         total = len(self.tasks)
         completed = sum(1 for task in self.tasks if task['completed'])
         pending = total - completed
         
         completion_rate = (completed / total * 100) if total > 0 else 0
         
-        stats_text = f"📊 Total: {total} | ✅ Completed: {completed} | ⏳ Pending: {pending} | 📈 Rate: {completion_rate:.1f}%"
-        self.stats_label.config(text=stats_text)
+        print("\n--- Statistics ---")
+        print(f"📊 Total Tasks: {total}")
+        print(f"✅ Completed: {completed}")
+        print(f"⏳ Pending: {pending}")
+        print(f"📈 Completion Rate: {completion_rate:.1f}%")
+        
+        # Priority breakdown
+        priorities = {'high': 0, 'medium': 0, 'low': 0}
+        for task in self.tasks:
+            if not task['completed']:
+                priorities[task['priority']] += 1
+        
+        print(f"\n📋 Pending by Priority:")
+        print(f"   🔴 High: {priorities['high']}")
+        print(f"   🟡 Medium: {priorities['medium']}")
+        print(f"   🟢 Low: {priorities['low']}")
+    
+    def find_task_by_id(self, task_id):
+        """Find a task by ID"""
+        for task in self.tasks:
+            if task['id'] == task_id:
+                return task
+        return None
+    
+    def run(self):
+        """Main application loop"""
+        print("Welcome to the Modern Todo List App!")
+        
+        while True:
+            self.display_menu()
+            
+            try:
+                choice = input("\nEnter your choice (1-8): ").strip()
+                
+                if choice == '1':
+                    self.display_tasks()
+                elif choice == '2':
+                    self.add_task()
+                elif choice == '3':
+                    self.mark_completed()
+                elif choice == '4':
+                    self.delete_task()
+                elif choice == '5':
+                    self.edit_task()
+                elif choice == '6':
+                    self.clear_completed()
+                elif choice == '7':
+                    self.show_statistics()
+                elif choice == '8':
+                    print("\nThank you for using the Todo List App! Goodbye! 👋")
+                    break
+                else:
+                    print("Invalid choice! Please enter a number between 1-8.")
+            
+            except KeyboardInterrupt:
+                print("\n\nInterrupted by user. Goodbye! 👋")
+                break
+            except Exception as e:
+                print(f"An error occurred: {e}")
 
 def main():
     """Main function to launch the application"""
-    root = tk.Tk()
-    app = ModernTodoApp(root)
-    root.mainloop()
+    app = CLITodoApp()
+    app.run()
 
 if __name__ == "__main__":
     main()
